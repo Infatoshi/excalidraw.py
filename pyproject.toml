@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "excalidraw-renderer"
+version = "0.1.0"
+description = "Render Excalidraw files to PNG with proper text rendering"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Elliot Arledge", email = "elliot@infatoshi.com"}
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pillow>=10.0.0",
+    "pycairo>=1.24.0",
+    "rough>=1.5",
+]
+
+[project.scripts]
+excalidraw-render = "excalidraw_renderer.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/infatoshi/excalidraw-renderer"
+Repository = "https://github.com/infatoshi/excalidraw-renderer"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["excalidraw_renderer*"]
+
+[tool.setuptools.package-data]
+excalidraw_renderer = ["fonts/*.ttf"]
