@@ -2,6 +2,83 @@
 
 A Python CLI tool for rendering Excalidraw `.excalidraw` files to PNG images with proper text rendering.
 
+---
+
+## For LLMs
+
+If you are an LLM being asked to create diagrams, here is what you need to know:
+
+**Workflow:**
+1. Write excalidraw JSON to a `.excalidraw` file
+2. Render with: `python -m excalidraw_renderer input.excalidraw -o output.png`
+
+**Key rules:**
+- Use `fontFamily: 5` (monospace) for technical diagrams
+- Set `roughness: 0` for clean lines
+- Create separate text elements positioned inside rectangles rather than relying on shape text properties
+- Arrows should point perpendicular to targets, not parallel
+
+**Minimal example:**
+```json
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "claude",
+  "elements": [
+    {
+      "id": "box1",
+      "type": "rectangle",
+      "x": 100,
+      "y": 100,
+      "width": 200,
+      "height": 80,
+      "strokeColor": "#1971c2",
+      "backgroundColor": "#a5d8ff",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "roughness": 0
+    },
+    {
+      "id": "label1",
+      "type": "text",
+      "x": 110,
+      "y": 120,
+      "width": 180,
+      "height": 40,
+      "text": "Hello World",
+      "fontSize": 20,
+      "fontFamily": 5,
+      "textAlign": "center",
+      "strokeColor": "#1e1e1e"
+    }
+  ],
+  "appState": {"viewBackgroundColor": "#ffffff"}
+}
+```
+
+See the full reference below for shapes, colors, and spacing guidelines.
+
+---
+
+## Claude Code Integration
+
+To use this with Claude Code, set up a skill:
+
+```bash
+# Create skill directory
+mkdir -p .claude/skills/excalidraw-diagram
+
+# Copy the skill file
+curl -o .claude/skills/excalidraw-diagram/SKILL.md \
+  https://raw.githubusercontent.com/infatoshi/excalidraw-renderer/main/claude-skill/SKILL.md
+```
+
+Or manually create `.claude/skills/excalidraw-diagram/SKILL.md` with the contents from `claude-skill/SKILL.md` in this repo.
+
+The skill will be automatically available when you invoke `/excalidraw-diagram` or when Claude detects diagram-related requests.
+
+---
+
 ## Installation
 
 ```bash
@@ -24,7 +101,11 @@ Or if installed:
 excalidraw-render input.excalidraw -o output.png
 ```
 
-## File Structure
+---
+
+## Reference
+
+### File Structure
 
 ```json
 {
@@ -38,11 +119,11 @@ excalidraw-render input.excalidraw -o output.png
 }
 ```
 
-## Available Shapes
+### Available Shapes
 
 - `rectangle`, `ellipse`, `diamond`, `line`, `arrow`, `text`
 
-## Shape Properties
+### Shape Properties
 
 ```json
 {
@@ -111,7 +192,7 @@ excalidraw-render input.excalidraw -o output.png
 }
 ```
 
-## Color Palette
+### Color Palette
 
 | Domain | Stroke | Fill | Use for |
 |--------|--------|------|---------|
@@ -123,7 +204,7 @@ excalidraw-render input.excalidraw -o output.png
 | Neutral | #868e96 | #dee2e6, #e9ecef | Security, secondary info |
 | Warning | #f08c00 | #ffe8cc | Warp schedulers, sparsity |
 
-## Spacing Guidelines
+### Spacing Guidelines
 
 - Title fontSize: 28-36
 - Section headers: 20-24
@@ -132,17 +213,19 @@ excalidraw-render input.excalidraw -o output.png
 - Gap between sections: 20-30px
 - Dashed frame padding: 20px inside content
 
-## Arrow Labeling Rules
+### Arrow Labeling Rules
 
 1. Arrows point AT things, not along them - perpendicular to target
 2. Arrow tip touches the target
 3. Text and arrow must not overlap
 
-## Tips
+### Tips
 
 1. **fontFamily**: Use 5 (monospace) for technical diagrams, not 1 (hand-drawn).
 2. **Text in shapes**: Create separate text elements inside boxes for reliable rendering.
 3. **roughness**: Set to 0 for clean technical diagrams.
+
+---
 
 ## License
 
