@@ -1,4 +1,4 @@
-# Excalidraw Renderer
+# excalidraw.py
 
 A Python CLI tool for rendering Excalidraw `.excalidraw` files to PNG images with proper text rendering.
 
@@ -10,7 +10,7 @@ If you are an LLM being asked to create diagrams, here is what you need to know:
 
 **Workflow:**
 1. Write excalidraw JSON to a `.excalidraw` file
-2. Render with: `python -m excalidraw_renderer input.excalidraw -o output.png`
+2. Render with: `python -m excalidraw input.excalidraw -o output.png`
 
 **Key rules:**
 - Use `fontFamily: 5` (monospace) for technical diagrams
@@ -70,7 +70,7 @@ mkdir -p .claude/skills/excalidraw-diagram
 
 # Copy the skill file
 curl -o .claude/skills/excalidraw-diagram/SKILL.md \
-  https://raw.githubusercontent.com/infatoshi/excalidraw-renderer/main/claude-skill/SKILL.md
+  https://raw.githubusercontent.com/infatoshi/excalidraw.py/main/claude-skill/SKILL.md
 ```
 
 Or manually create `.claude/skills/excalidraw-diagram/SKILL.md` with the contents from `claude-skill/SKILL.md` in this repo.
@@ -93,7 +93,7 @@ uv pip install -e .
 ## Usage
 
 ```bash
-python -m excalidraw_renderer input.excalidraw -o output.png
+python -m excalidraw input.excalidraw -o output.png
 ```
 
 Or if installed:

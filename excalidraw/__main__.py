@@ -1,5 +1,5 @@
 """
-Allow running the package as: python -m excalidraw_renderer
+Allow running the package as: python -m excalidraw
 """
 
 from .cli import main

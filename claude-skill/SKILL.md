@@ -8,7 +8,7 @@ description: Generate Excalidraw diagrams. Use when the user asks to create a di
 ## Workflow
 
 1. Write excalidraw JSON to `<name>.excalidraw`
-2. Render: `python -m excalidraw_renderer <name>.excalidraw -o <name>.png`
+2. Render: `python -m excalidraw <name>.excalidraw -o <name>.png`
 
 ## File Structure
 
