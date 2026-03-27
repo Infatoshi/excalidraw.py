@@ -31,3 +31,8 @@ include = ["excalidraw*"]
 
 [tool.setuptools.package-data]
 excalidraw = ["fonts/*.ttf"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]

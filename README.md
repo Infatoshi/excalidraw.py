@@ -10,13 +10,14 @@ If you are an LLM being asked to create diagrams, here is what you need to know:
 
 **Workflow:**
 1. Write excalidraw JSON to a `.excalidraw` file
-2. Render with: `python -m excalidraw input.excalidraw -o output.png`
+2. Render with: `uv run python -m excalidraw input.excalidraw -o output.png`
 
 **Key rules:**
 - Use `fontFamily: 5` (monospace) for technical diagrams
 - Set `roughness: 0` for clean lines
-- Create separate text elements positioned inside rectangles rather than relying on shape text properties
+- Text bound to container shapes is supported, but separate text elements are still the safest default
 - Arrows should point perpendicular to targets, not parallel
+- Unsupported element types fail explicitly instead of being skipped silently
 
 **Minimal example:**
 ```json
@@ -82,23 +83,23 @@ The skill will be automatically available when you invoke `/excalidraw-diagram` 
 ## Installation
 
 ```bash
-pip install -e .
-```
-
-Or with uv:
-```bash
-uv pip install -e .
+uv sync --dev
 ```
 
 ## Usage
 
 ```bash
-python -m excalidraw input.excalidraw -o output.png
+uv run python -m excalidraw input.excalidraw -o output.png
 ```
 
 Or if installed:
 ```bash
 excalidraw-render input.excalidraw -o output.png
+```
+
+Batch render to any output directory:
+```bash
+uv run python -m excalidraw --batch diagrams/*.excalidraw --outdir rendered/
 ```
 
 ---
@@ -121,7 +122,7 @@ excalidraw-render input.excalidraw -o output.png
 
 ### Available Shapes
 
-- `rectangle`, `ellipse`, `diamond`, `line`, `arrow`, `text`
+- `rectangle`, `ellipse`, `diamond`, `line`, `arrow`, `freedraw`, `text`
 
 ### Shape Properties
 

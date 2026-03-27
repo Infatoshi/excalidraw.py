@@ -8,7 +8,8 @@ description: Generate Excalidraw diagrams. Use when the user asks to create a di
 ## Workflow
 
 1. Write excalidraw JSON to `<name>.excalidraw`
-2. Render: `python -m excalidraw <name>.excalidraw -o <name>.png`
+2. Render: `uv run python -m excalidraw <name>.excalidraw -o <name>.png`
+3. For multiple diagrams, use: `uv run python -m excalidraw --batch *.excalidraw --outdir rendered/`
 
 ## File Structure
 
@@ -26,7 +27,7 @@ description: Generate Excalidraw diagrams. Use when the user asks to create a di
 
 ## Available Shapes
 
-- `rectangle`, `ellipse`, `diamond`, `line`, `arrow`, `text`
+- `rectangle`, `ellipse`, `diamond`, `line`, `arrow`, `freedraw`, `text`
 
 ## Shape Properties
 
@@ -128,3 +129,4 @@ description: Generate Excalidraw diagrams. Use when the user asks to create a di
 1. **fontFamily**: Use 5 (monospace) for technical diagrams, not 1 (hand-drawn).
 2. **Text in shapes**: Create separate text elements inside boxes for reliable rendering.
 3. **roughness**: Set to 0 for clean technical diagrams.
+4. **Unsupported types**: The renderer now fails explicitly on unsupported element types instead of dropping them silently.

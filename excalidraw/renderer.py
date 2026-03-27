@@ -7,7 +7,13 @@ import io
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from .parser import ExcalidrawElement, Bounds, parse_excalidraw, calculate_bounds
+from .parser import (
+    ExcalidrawElement,
+    Bounds,
+    parse_excalidraw,
+    calculate_bounds,
+    find_unsupported_types,
+)
 from .colors import parse_color
 
 
@@ -34,6 +40,17 @@ class ExcalidrawRenderer:
         self.height = int(self.bounds.height * self.scale + 2 * self.padding)
         return self
 
+    def unsupported_types(self) -> List[str]:
+        """Return unsupported element types present in the loaded document."""
+        return sorted(find_unsupported_types(self.elements))
+
+    def _ensure_supported(self):
+        """Raise if the document contains unsupported element types."""
+        unsupported = self.unsupported_types()
+        if unsupported:
+            joined = ", ".join(unsupported)
+            raise ValueError(f"Unsupported element type(s): {joined}")
+
     def transform(self, x: float, y: float) -> Tuple[float, float]:
         """Transform element coordinates to canvas coordinates."""
         if self.bounds is None:
@@ -46,6 +63,8 @@ class ExcalidrawRenderer:
         """Render elements to PNG file."""
         from .shapes import render_shapes
         from .text import render_text_overlay
+
+        self._ensure_supported()
 
         # Create cairo surface
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.width, self.height)
@@ -75,6 +94,9 @@ class ExcalidrawRenderer:
     def render_to_svg(self, output_path: Path) -> Path:
         """Render elements to SVG file."""
         from .shapes import render_shapes
+        from .text import svg_font_family_name
+
+        self._ensure_supported()
 
         # Create SVG surface
         surface = cairo.SVGSurface(str(output_path), self.width, self.height)
@@ -90,19 +112,22 @@ class ExcalidrawRenderer:
 
         # Render text elements as SVG text
         text_elements = [e for e in self.elements if e.type == "text"]
-        self._render_svg_text(ctx, text_elements)
+        self._render_svg_text(ctx, text_elements, svg_font_family_name)
 
         surface.finish()
         return output_path
 
-    def _render_svg_text(self, ctx: cairo.Context, text_elements: List[ExcalidrawElement]):
+    def _render_svg_text(self, ctx: cairo.Context, text_elements: List[ExcalidrawElement], svg_font_family_name):
         """Render text elements using cairo (for SVG output)."""
-        ctx.select_font_face("Virgil", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-
         for elem in text_elements:
             if not elem.text:
                 continue
 
+            ctx.select_font_face(
+                svg_font_family_name(elem.font_family),
+                cairo.FONT_SLANT_NORMAL,
+                cairo.FONT_WEIGHT_NORMAL,
+            )
             tx, ty = self.transform(elem.x, elem.y)
             font_size = elem.font_size * self.scale
 

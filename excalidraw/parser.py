@@ -5,7 +5,18 @@ Parser for Excalidraw JSON files.
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple, Optional, Set
+
+
+SUPPORTED_ELEMENT_TYPES = {
+    "rectangle",
+    "ellipse",
+    "diamond",
+    "line",
+    "arrow",
+    "freedraw",
+    "text",
+}
 
 
 @dataclass
@@ -105,6 +116,11 @@ def parse_excalidraw(file_path: Path) -> Tuple[List[ExcalidrawElement], Dict[str
     return elements, app_state
 
 
+def find_unsupported_types(elements: List[ExcalidrawElement]) -> Set[str]:
+    """Return unsupported element types present in a document."""
+    return {elem.type for elem in elements if elem.type not in SUPPORTED_ELEMENT_TYPES}
+
+
 @dataclass
 class Bounds:
     """Bounding box for elements."""
@@ -143,7 +159,7 @@ def calculate_bounds(elements: List[ExcalidrawElement], padding: float = 20.0) -
 
     for elem in elements:
         # For lines/arrows, consider all points
-        if elem.type in ("line", "arrow") and elem.points:
+        if elem.type in ("line", "arrow", "freedraw") and elem.points:
             for pt in elem.points:
                 px = elem.x + pt[0]
                 py = elem.y + pt[1]

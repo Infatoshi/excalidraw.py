@@ -28,6 +28,10 @@ def render_shapes(ctx: cairo.Context, elements: List["ExcalidrawElement"], rende
             render_line(ctx, elem, renderer)
         elif elem.type == "arrow":
             render_arrow(ctx, elem, renderer)
+        elif elem.type == "freedraw":
+            render_freedraw(ctx, elem, renderer)
+        else:
+            raise ValueError(f"Unsupported element type: {elem.type}")
 
 
 def _get_rough_options(elem: "ExcalidrawElement", renderer: "ExcalidrawRenderer") -> Options:
@@ -320,6 +324,34 @@ def render_arrow(ctx: cairo.Context, elem: "ExcalidrawElement", renderer: "Excal
         if elem.end_arrowhead == "arrow":
             _draw_arrowhead(ctx, scaled_points[-2], scaled_points[-1], arrow_size, elem, renderer)
 
+    ctx.restore()
+
+
+def render_freedraw(ctx: cairo.Context, elem: "ExcalidrawElement", renderer: "ExcalidrawRenderer"):
+    """Render a freehand stroke."""
+    if not elem.points or len(elem.points) < 2:
+        return
+
+    ctx.save()
+
+    base_x, base_y = renderer.transform(elem.x, elem.y)
+    scaled_points = [
+        (base_x + pt[0] * renderer.scale, base_y + pt[1] * renderer.scale)
+        for pt in elem.points
+    ]
+
+    if elem.roughness > 0:
+        gen = RoughGenerator()
+        opts = _get_rough_options(elem, renderer)
+        drawable = gen.linearPath(scaled_points, opts)
+        _render_rough_ops(ctx, drawable)
+    else:
+        ctx.move_to(*scaled_points[0])
+        for point in scaled_points[1:]:
+            ctx.line_to(*point)
+
+    _set_stroke_style(ctx, elem, renderer)
+    ctx.stroke()
     ctx.restore()
 
 

@@ -1,10 +1,10 @@
 """
-Text rendering for Excalidraw elements using PIL with Virgil font.
+Text rendering for Excalidraw elements using PIL with Excalidraw-style fonts.
 """
 
 import io
 from pathlib import Path
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -18,18 +18,61 @@ if TYPE_CHECKING:
 # Path to Virgil font - inside this package
 FONT_DIR = Path(__file__).parent / "fonts"
 VIRGIL_FONT = FONT_DIR / "Virgil.ttf"
+SANS_FONT_CANDIDATES = (
+    Path("/System/Library/Fonts/Helvetica.ttc"),
+    Path("/System/Library/Fonts/Supplemental/Arial.ttf"),
+    Path("/Library/Fonts/Arial.ttf"),
+    Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+)
+MONO_FONT_CANDIDATES = (
+    Path("/System/Library/Fonts/Supplemental/Menlo.ttc"),
+    Path("/Library/Fonts/Menlo.ttc"),
+    Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"),
+    Path("/usr/share/fonts/TTF/DejaVuSansMono.ttf"),
+)
 
 # Font cache to avoid reloading
 _font_cache: dict = {}
 
 
-def get_font(size: int) -> ImageFont.FreeTypeFont:
-    """Get Virgil font at specified size, with caching."""
-    if size not in _font_cache:
-        if not VIRGIL_FONT.exists():
-            raise FileNotFoundError(f"Virgil font not found at {VIRGIL_FONT}")
-        _font_cache[size] = ImageFont.truetype(str(VIRGIL_FONT), size)
-    return _font_cache[size]
+def font_paths_for_family(font_family: int) -> List[Path]:
+    """Return candidate font paths for an Excalidraw font family."""
+    if font_family == 5:
+        return list(MONO_FONT_CANDIDATES)
+    if font_family == 2:
+        return list(SANS_FONT_CANDIDATES)
+    return [VIRGIL_FONT]
+
+
+def svg_font_family_name(font_family: int) -> str:
+    """Return a cairo/SVG font family name for an Excalidraw font family."""
+    if font_family == 5:
+        return "monospace"
+    if font_family == 2:
+        return "sans-serif"
+    return "Virgil"
+
+
+def resolve_font_path(font_family: int) -> Optional[Path]:
+    """Resolve the best available font file for an Excalidraw font family."""
+    for candidate in font_paths_for_family(font_family):
+        if candidate.exists():
+            return candidate
+    if VIRGIL_FONT.exists():
+        return VIRGIL_FONT
+    return None
+
+
+def get_font(size: int, font_family: int = 1):
+    """Get a font at specified size and family, with caching."""
+    key = (size, font_family)
+    if key not in _font_cache:
+        font_path = resolve_font_path(font_family)
+        if font_path is not None:
+            _font_cache[key] = ImageFont.truetype(str(font_path), size)
+        else:
+            _font_cache[key] = ImageFont.load_default()
+    return _font_cache[key]
 
 
 def render_text_overlay(
@@ -51,17 +94,35 @@ def render_text_overlay(
     # Load the cairo-rendered shapes
     img = Image.open(png_buffer).convert("RGBA")
     draw = ImageDraw.Draw(img)
+    elements_by_id = {elem.id: elem for elem in renderer.elements}
 
     for elem in text_elements:
         if not elem.text:
             continue
+
+        if elem.container_id:
+            container = elements_by_id.get(elem.container_id)
+            if container is not None:
+                container_x, container_y = renderer.transform(container.x, container.y)
+                container_width = container.width * renderer.scale
+                container_height = container.height * renderer.scale
+                render_bound_text(
+                    draw,
+                    elem,
+                    container_x,
+                    container_y,
+                    container_width,
+                    container_height,
+                    renderer,
+                )
+                continue
 
         # Transform coordinates
         tx, ty = renderer.transform(elem.x, elem.y)
 
         # Scale font size
         font_size = int(elem.font_size * renderer.scale)
-        font = get_font(font_size)
+        font = get_font(font_size, elem.font_family)
 
         # Get color
         color = to_pil_color(elem.stroke_color, elem.opacity)
@@ -109,7 +170,7 @@ def render_bound_text(
         return
 
     font_size = int(elem.font_size * renderer.scale)
-    font = get_font(font_size)
+    font = get_font(font_size, elem.font_family)
     color = to_pil_color(elem.stroke_color, elem.opacity)
 
     lines = elem.text.split("\n")

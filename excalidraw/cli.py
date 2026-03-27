@@ -14,6 +14,7 @@ def render_file(input_path: Path, output_path: Path, format: str, scale: float =
     """Render a single .excalidraw file."""
     renderer = ExcalidrawRenderer(scale=scale)
     renderer.load(input_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     if format == "png":
         renderer.render_to_png(output_path)
@@ -23,17 +24,20 @@ def render_file(input_path: Path, output_path: Path, format: str, scale: float =
     print(f"Rendered: {input_path} -> {output_path}")
 
 
-def batch_render(input_files: List[Path], output_dir: Path, format: str, scale: float = 2.0):
+def batch_render(input_files: List[Path], output_dir: Path, format: str, scale: float = 2.0) -> int:
     """Render multiple .excalidraw files."""
     output_dir.mkdir(parents=True, exist_ok=True)
+    failures = 0
 
     for input_path in input_files:
         output_name = input_path.stem + f".{format}"
         output_path = output_dir / output_name
         try:
             render_file(input_path, output_path, format, scale)
-        except Exception as e:
-            print(f"Error rendering {input_path}: {e}", file=sys.stderr)
+        except Exception as exc:
+            failures += 1
+            print(f"Error rendering {input_path}: {exc}", file=sys.stderr)
+    return failures
 
 
 def main():
@@ -82,7 +86,9 @@ def main():
         if not args.outdir:
             print("Error: --outdir required for batch mode", file=sys.stderr)
             sys.exit(1)
-        batch_render(args.batch, args.outdir, args.format, args.scale)
+        failures = batch_render(args.batch, args.outdir, args.format, args.scale)
+        if failures:
+            sys.exit(1)
         return
 
     # Single file mode
