@@ -7,7 +7,7 @@ import pytest
 from excalidraw.cli import batch_render
 from excalidraw.parser import ExcalidrawElement, calculate_bounds
 from excalidraw.renderer import ExcalidrawRenderer
-from excalidraw.text import svg_font_family_name
+from excalidraw.text import font_paths_for_family, resolve_font_path, svg_font_family_name
 
 
 def write_document(path: Path, elements: list[dict]):
@@ -164,6 +164,14 @@ def test_batch_render_returns_failure_count(tmp_path: Path):
 
 def test_svg_font_family_name_maps_monospace():
     assert svg_font_family_name(5) == "monospace"
+
+
+def test_monospace_font_resolution_includes_macos_menlo():
+    candidates = font_paths_for_family(5)
+
+    assert Path("/System/Library/Fonts/Menlo.ttc") in candidates
+    if Path("/System/Library/Fonts/Menlo.ttc").exists():
+        assert resolve_font_path(5) == Path("/System/Library/Fonts/Menlo.ttc")
 
 
 def test_bound_text_renders_inside_container(tmp_path: Path):

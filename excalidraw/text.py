@@ -25,8 +25,11 @@ SANS_FONT_CANDIDATES = (
     Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
 )
 MONO_FONT_CANDIDATES = (
+    Path("/System/Library/Fonts/Menlo.ttc"),
     Path("/System/Library/Fonts/Supplemental/Menlo.ttc"),
     Path("/Library/Fonts/Menlo.ttc"),
+    Path("/System/Library/Fonts/SFNSMono.ttf"),
+    Path("/System/Library/Fonts/Supplemental/PTMono.ttc"),
     Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"),
     Path("/usr/share/fonts/TTF/DejaVuSansMono.ttf"),
 )
