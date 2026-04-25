@@ -10,7 +10,7 @@ If you are an LLM being asked to create diagrams, here is what you need to know:
 
 **Workflow:**
 1. Write excalidraw JSON to a `.excalidraw` file
-2. Render with: `uv run python -m excalidraw input.excalidraw -o output.png`
+2. Render with: `excalidraw-render input.excalidraw -o output.png`
 
 **Key rules:**
 - Use `fontFamily: 5` (monospace) for technical diagrams
@@ -82,6 +82,26 @@ The skill will be automatically available when you invoke `/excalidraw-diagram` 
 
 ## Installation
 
+Install as a persistent uv tool from GitHub:
+
+```bash
+uv tool install 'git+https://github.com/Infatoshi/excalidraw.py.git'
+```
+
+Run once without installing:
+
+```bash
+uvx --from 'git+https://github.com/Infatoshi/excalidraw.py.git' excalidraw-render input.excalidraw -o output.png
+```
+
+Run once from a local checkout:
+
+```bash
+uvx --with /Users/infatoshi/excalidraw.py excalidraw-render input.excalidraw -o output.png
+```
+
+For local development:
+
 ```bash
 uv sync --dev
 ```
@@ -89,17 +109,24 @@ uv sync --dev
 ## Usage
 
 ```bash
-uv run python -m excalidraw input.excalidraw -o output.png
+excalidraw-render input.excalidraw -o output.png
 ```
 
-Or if installed:
+The shorter alias is also available:
+
 ```bash
-excalidraw-render input.excalidraw -o output.png
+excalidraw input.excalidraw -o output.png
 ```
 
 Batch render to any output directory:
 ```bash
-uv run python -m excalidraw --batch diagrams/*.excalidraw --outdir rendered/
+excalidraw-render --batch diagrams/*.excalidraw --outdir rendered/
+```
+
+From a local checkout, the module entrypoint still works:
+
+```bash
+uv run python -m excalidraw input.excalidraw -o output.png
 ```
 
 ---
